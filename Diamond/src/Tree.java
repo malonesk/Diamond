@@ -22,7 +22,7 @@ public class Tree {
     public void setFirstBlueChoice(int idCell) {
 
         root = new Node(idCell,1);
-        board.setPawn(idCell,(byte)1);
+        board.setPawn(idCell,(byte)1, (byte)1);
     }
 
     /* setFirstRedChoice():
@@ -33,7 +33,7 @@ public class Tree {
      */
     public void setFirstRedChoice(int idCell) {
         root.addChild(idCell);
-        board.setPawn(idCell,(byte)7);
+        board.setPawn(idCell,(byte)7, (byte)2);
     }
 
     /* buildTree();
@@ -89,13 +89,13 @@ public class Tree {
             // if the cell i is empty
             if (board.board[i] == Board.VOID_CELL) {
                 // place the pawn here
-                board.setPawn(i,(byte)nextPawnValue);
+                board.setFalsePawn(i,(byte)nextPawnValue);
                 // create the corresponding node in the tree
                 Node child = n.addChild(i);
                 // recursive call
                 computePossibilities(child);
                 // remove pawn so that the cell appears to be free
-                board.setPawn(i,Board.VOID_CELL);
+                board.setFalsePawn(i,Board.VOID_CELL);
             }
         }
     }
@@ -152,29 +152,4 @@ public class Tree {
         return nb;
     }
 
-    public int computeBestPlay(Node n) {
-        /*On calcule le meilleure coup de rouge d'une manière bête et méchante.
-        Suivant le dernier coup de bleu, on calcule le coup à jouer qui amènera le plus de victoires de rouge
-        selon l'arbre des possibilités (qui est préalablement généré)
-         */
-
-        computePossibilities(n);
-        /* l'arbre des possiblités est généré,
-        /* pour tout les fils de n (tout les prochains coups de rouge)
-            on calcule le nombre de victoire rouge dans le sous arbre de racine fils que l'on stocke que l'on compare avec un buffer max
-            on sauvegarde le nom fils qui amène le plus de victoire de rouge
-            on reotourne l'idCell de ce noeud fils, c'est le meilleur coup que le rouge peut jouer.
-
-         */
-        int max=0;
-        Node nMax=null;
-        for (Node fils : n.children) {
-            int nbWin=computeRedVictories(fils);
-            if (max<nbWin) {
-                max=nbWin;
-                nMax=fils;
-            }
-        }
-        return nMax.idCell;
-    }
 }

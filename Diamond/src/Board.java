@@ -3,6 +3,8 @@
  */
 public class Board {
 
+    public int[] coupsJoues;
+
     public static byte VOID_CELL = -1;
     public static byte NO_NEIGHBOR = -1;
     /* NOTES :
@@ -29,6 +31,7 @@ public class Board {
     int blueScore;
 
     public Board() {
+        coupsJoues = new int[12];
         board = new byte[13];
         clearBoard();
         neighbors = new byte[13][6];
@@ -148,7 +151,12 @@ public class Board {
     /* setPawn() :
        put a pawn of the given value at idCell in the board.
      */
-    public void setPawn(int idCell, byte value) {
+    public void setPawn(int idCell, byte value, byte turn) {
+        board[idCell] = value;
+        coupsJoues[turn-1]=idCell;
+    }
+
+    public void setFalsePawn(int idCell, byte value) {
         board[idCell] = value;
     }
 

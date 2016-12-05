@@ -18,6 +18,7 @@ public class Party {
     Tree tree;
     BufferedReader consoleIn;
     Scanner input;
+    ArtificialIntelligence IA;
 
     public Party() {
         consoleIn = new BufferedReader(new InputStreamReader(System.in));
@@ -48,38 +49,32 @@ public class Party {
         System.out.println("Bleu : Entrer votre 1er coup (entre 0 et 12) : ");
         int coupB1 = input.nextInt();
         tree.setFirstBlueChoice(coupB1);
-        board.setPawn(coupB1, (byte)1);
 
         System.out.println("Rouge : Entrer votre 1er coup (entre 0 et 12) : ");
         int coupR1 = input.nextInt();
         tree.setFirstRedChoice(coupR1);
-        board.setPawn(coupR1, (byte)1);
 
         tree.buildTree();
-        int noTour=1;
-        tree.root=tree.root.children[0];
-        while (noTour<6) {
-            noTour++;
-            System.out.println("Bleu : Entrer votre "+noTour+"ieme coup (entre 0 et 12) : ");
-            int coupB = input.nextInt();
-            board.setPawn(coupB,(byte)noTour);
+        IA=new ArtificialIntelligence(tree,board);
 
-            /* calcule du meilleur coup de rouge à partir du dernier coup bleu.*/
-            tree.root=tree.root.children[0];
-            //tree.buildTree();
-            int coupR=tree.computeBestPlay(tree.root);
-            board.setPawn(coupR, (byte)noTour);
-            System.out.println("Rouge joue en "+coupR+" au tour "+noTour);
+        int turn=2;
+        while (turn<12) {
+            turn++;
+            System.out.println("Bleu : Entrer votre "+((turn/2)+1)+"ieme coup (entre 0 et 12) : ");
+            int coupB = input.nextInt();
+            board.setPawn(coupB,(byte)((turn/2)+1), (byte)turn);
+
+            turn++;
+            // IA
+            IA.setB(board);
+            //IA.setT(tree);
+            Node nLastPlay=IA.searchLastBluePlayNode(tree.root,(byte)(turn-1));
+            int coupR=IA.computeBestPlay(nLastPlay);
+            board.setPawn(coupR, (byte)(turn/2), (byte)turn);
+
+            System.out.println("rouge : tour "+(turn/2)+ "joue "+coupR);
         }
         board.computeScore();
         System.out.println("bleu : "+board.blueScore+ " rouge : "+board.redScore);
-
-
-
-
-        tree.buildTree();
-
-
-
     }
 }
