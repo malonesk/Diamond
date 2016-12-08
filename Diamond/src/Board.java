@@ -151,7 +151,7 @@ public class Board {
     /* setPawn() :
        put a pawn of the given value at idCell in the board.
      */
-    public void setPawn(int idCell, byte value, byte turn) {
+    public void setPawn(int idCell, byte value, byte turn) { //exprimer turn en fonctiond de value; sachant que value = (turn/2) si rouge -> turn = value*2 ; bleu -> turn=(value-1)*2
         board[idCell] = value;
         coupsJoues[turn-1]=idCell;
     }
