@@ -14,12 +14,16 @@ import java.util.*;
  */
 
 public class Party {
+    final String ANSI_RED = "\u001B[31m";
+    final String ANSI_BLUE = "\u001B[34m";
+    final String ANSI_RESET = "\u001B[0m";
     Board board;
     Tree tree;
     BufferedReader consoleIn;
     Scanner input;
     ArtificialIntelligence IARed;
     ArtificialIntelligence IABlue;
+    final int[] positionChiffre = new int[]{20, 24, 28, 52, 56, 60, 64, 90, 94, 98, 124, 128, 154};
 
     public Party() {
         consoleIn = new BufferedReader(new InputStreamReader(System.in));
@@ -31,25 +35,9 @@ public class Party {
     public void start() {
 
         board.clearBoard();
-        /* A COMPLETER :
-           - afficher le plateau de jeu
-           - demander son 1er coup au joueur bleu, et mettre à jour l'arbre et le plateau
-           - afficher le plateau de jeu
-           - demander son 1er coup au joueur rouge, et mettre à jour l'arbre et le plateau
-           - calculer l'arbre de tous les coups possibles
-           - tant que partie non finie :
-              - demander son prochain coup au joueur bleu, et mettre à jour l'arbre et le plateau
-              - afficher le plateau de jeu
-              - calculer le meilleur prochain cou du rouge et mettre à jour l'arbre et le plateau
-               - afficher le plateau de jeu
-            - fin tant que
-            - afficher vainqueur
+/* PLAYER VERSUS PLAYER *//*
 
-         */
-        /* PLAYER VERSUS PLAYER */
-
-        /*initialisation et contruction de l'arbre */
-        /*System.out.println("Bleu : Entrer votre 1er coup (entre 0 et 12) : ");
+        System.out.println("Bleu : Entrer votre 1er coup (entre 0 et 12) : ");
 
         int coupB1 = input.nextInt();
         tree.setFirstBlueChoice(coupB1);
@@ -61,8 +49,7 @@ public class Party {
 
         tree.buildTree();
 
-        /* ALgorithme de la partie */
-        /*IARed=new ArtificialIntelligence(tree,board);
+        IARed=new ArtificialIntelligence(tree,board);
 
         int turn=2;
         while (turn<12) {
@@ -83,17 +70,30 @@ public class Party {
         }
         board.computeScore();
         System.out.println("bleu : "+board.blueScore+ " rouge : "+board.redScore);
+
+
         */
-        /* IA VS IA
-         */
-        System.out.println("Bleu : Entrer votre 1er coup (entre 0 et 12) : ");
+
+
+
+/* IA VS IA */
+        char[] plateauAffichable=buildPlateau();
+        affichePlateau(plateauAffichable);
+
+        System.out.println(ANSI_BLUE+"Bleu : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
         int coupB1 = input.nextInt();
         tree.setFirstBlueChoice(coupB1);
 
-        System.out.println("Rouge : Entrer votre 1er coup (entre 0 et 12) : ");
+        updatePlateau(1,coupB1,plateauAffichable);
+        affichePlateau(plateauAffichable);
+
+        System.out.println(ANSI_RED+"Rouge : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
 
         int coupR1 = input.nextInt();
         tree.setFirstRedChoice(coupR1);
+
+        updatePlateau(1,coupR1,plateauAffichable);
+        affichePlateau(plateauAffichable);
 
         tree.buildTree();
         IARed=new ArtificialIntelligence(tree,board);
@@ -104,22 +104,193 @@ public class Party {
             turn++;
             IABlue.setB(board);
             Node nLastPlayB=IABlue.searchLastBluePlayNode(tree.root,(byte)(turn-1));
-            int coupB=IABlue.computeBestPlay(nLastPlayB);
+            int coupB=IABlue.computeEquitablePlay(nLastPlayB);
             board.setPawn(coupB,(byte)((turn/2)+1), (byte)turn);
 
-            System.out.println("bleu : tour "+(turn/2)+ "\njoue "+coupB);
+            updatePlateau(turn/2,coupB,plateauAffichable);
+            affichePlateau(plateauAffichable);
+
+            System.out.println(ANSI_BLUE+"bleu :"+ANSI_RESET+ "joue "+coupB);
 
             turn++;
             // IA Rouge
             IARed.setB(board);
             Node nLastPlayR=IARed.searchLastBluePlayNode(tree.root,(byte)(turn-1));
-            int coupR=IARed.computeBestPlay(nLastPlayR);
+            int coupR=IARed.computeBestRedPlay(nLastPlayR);
             board.setPawn(coupR, (byte)(turn/2), (byte)turn);
 
-            System.out.println("rouge : tour "+(turn/2)+ "\njoue "+coupR);
+            updatePlateau(turn/2,coupR,plateauAffichable);
+            affichePlateau(plateauAffichable);
+
+            System.out.println(ANSI_RED+"rouge :"+ANSI_RESET+" joue "+coupR);
         }
         board.computeScore();
-        System.out.println("bleu : "+board.blueScore+ " rouge : "+board.redScore);
+        System.out.println(ANSI_BLUE+"bleu : "+ANSI_RESET+board.blueScore+ANSI_RED+" rouge : "+board.redScore+ANSI_RESET);
+
+    }
+    public char[] buildPlateau() {
+        char[] charPrint = new char[178];
+        int lastLen=0;
+        String charToPrint="";
+        String sToPrint="";
+        int li=0;
+        for (int i = 0; i <13; i++) {
+            switch (li) {
+                case 0 :
+                    sToPrint="  *************";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 1 :
+                    sToPrint="  *   *   *   **";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 2 :
+                    sToPrint="******************";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 3 :
+                    sToPrint="*   *   *   *   **";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 4 :
+                    sToPrint="******************";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 5 :
+                    sToPrint="  *   *   *   **";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 7 :
+                    sToPrint="  **************";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 8 :
+                    sToPrint="    *   *   **";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 9 :
+                    sToPrint="    **********";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 10 :
+                    sToPrint="      *   **";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+                case 11 :
+                    sToPrint="      ******";
+                    charToPrint+=sToPrint;
+                    for (int j=0;j<sToPrint.length();j++) charPrint[lastLen+j]=sToPrint.charAt(j);
+                    lastLen=charToPrint.length();
+                    charPrint[lastLen]='\n';
+                    lastLen++;
+                    break;
+            }
+            li++;
+        }
+        return charPrint;
+    }
+
+    public void affichePlateau(char[] tab) {
+        for (int i=0; i<tab.length;i++) {
+            if (positionChiffre[0]==i && board.board[0]!=-1) {
+                if (board.board[0]>6) System.out.print(ANSI_RED+tab[i]+ANSI_RESET);
+                else System.out.print(ANSI_BLUE+tab[i]+ANSI_RESET);
+            } else System.out.print(tab[i]);
+        }
+
+    }
+
+
+    public void updatePlateau(int valeurPion, int coup, char[] plateau) {
+
+        char val=Integer.toString(valeurPion).charAt(0);
+        
+        switch(coup) {
+            case 0 :
+                plateau[positionChiffre[0]]=val;
+                break;
+            case 1 :
+                plateau[positionChiffre[1]]=val;
+                break;
+            case 2 :
+                plateau[positionChiffre[2]]=val;
+                break;
+            case 3 :
+                plateau[positionChiffre[3]]=val;
+                break;
+            case 4 :
+                plateau[positionChiffre[4]]=val;
+                break;
+            case 5 :
+                plateau[positionChiffre[5]]=val;
+                break;
+            case 6 :
+                plateau[positionChiffre[6]]=val;
+                break;
+            case 7 :
+                plateau[positionChiffre[7]]=val;
+                break;
+            case 8 :
+                plateau[positionChiffre[8]]=val;
+                break;
+            case 9 :
+                plateau[positionChiffre[9]]=val;
+                break;
+            case 10 :
+                plateau[positionChiffre[10]]=val;
+                break;
+            case 11 :
+                plateau[positionChiffre[11]]=val;
+                break;
+            case 12 :
+                plateau[positionChiffre[12]]=val;
+                break;
+        }
+    }
+
+    public void printBoard() {
+        System.out.println("  *************");
+        System.out.print("  * ");
 
     }
 }
