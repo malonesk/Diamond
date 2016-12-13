@@ -14,42 +14,47 @@ import java.util.*;
  */
 
 public class Party {
-    final String ANSI_RED = "\u001B[31m";
-    final String ANSI_BLUE = "\u001B[34m";
-    final String ANSI_RESET = "\u001B[0m";
-    Board board;
-    Tree tree;
-    Scanner input;
-    ArtificialIntelligence IARed;
-    ArtificialIntelligence IABlue;
-    final int[] positionChiffre = new int[]{19, 23, 27, 50, 54, 58, 62, 88, 92, 96, 122, 126, 152};
-    boolean slowmode; //0 pour une party avec 2,5s d'attente entre chaque tour, 1 pour une party sans attente
-    int typeParty; // 0 IA hard vs IA hard, 1 PvsIA normal, 2 PvsIA hard, 3 IA normal vs IA hard
+    private final String ANSI_RED = "\u001B[31m";
+    private final String ANSI_BLUE = "\u001B[34m";
+    private final String ANSI_RESET = "\u001B[0m";
+    private Board board;
+    private Tree tree;
+    private Scanner input;
+    private ArtificialIntelligence IARed;
+    private ArtificialIntelligence IABlue;
+    private final int[] positionChiffre; //les positions des chiffres dans le tableau d'affichage du plateau
+    private boolean isPlayable;
 
     public Party() {
         board = new Board();
         tree = new Tree(board);
         input=new Scanner(System.in);
+        positionChiffre = new int[]{19, 23, 27, 50, 54, 58, 62, 88, 92, 96, 122, 126, 152};
+        isPlayable=false;
     }
 
-    public void start(int typeParty) {
-        this.typeParty=typeParty;
+    public void start(int typeParty, boolean slowmode) {
 /* PLAYER VERSUS IA */
         if (typeParty==1 || typeParty==2) {
             char[] plateauAffichable = initPvsIA();
             int turn = 2;
+            int coupB=-1;
             while (turn < 12) {
-                wait2sec();
+                isPlayable=false;
+                if (slowmode) wait2sec();
                 turn++;
-
-                System.out.println(ANSI_BLUE + "Bleu :" + ANSI_RESET + " Entrer votre " + ((turn / 2) + 1) + "ieme coup (entre 0 et 12) : ");
-                int coupB = input.nextInt();
+                do {
+                    System.out.print(ANSI_BLUE + "Bleu :" + ANSI_RESET + " Entrer votre " + ((turn / 2) + 1) + "ieme coup (entre 0 et 12) : ");
+                    coupB = input.nextInt();
+                    isPlayable(coupB);
+                } while (!isPlayable);
+                System.out.println();
                 board.setPawn(coupB, (byte) ((turn / 2) + 1), (byte) turn);
                 updatePlateau((turn / 2) + 1, coupB, plateauAffichable);
                 affichePlateau(plateauAffichable);
                 System.out.println(ANSI_BLUE + "Vous " + ANSI_RESET + "jouez " + coupB);
 
-                wait2sec();
+                if (slowmode) wait2sec();
                 turn++;
                 // IA
                 IARed.setB(board);
@@ -67,6 +72,7 @@ public class Party {
             }
             afficheScore();
         }
+/* IA vs IA */
         else if (typeParty==0 || typeParty==3) {
             char[] plateauAffichable=initIAvsIA();
             int turn=2;
@@ -84,7 +90,7 @@ public class Party {
                 affichePlateau(plateauAffichable);
                 System.out.println(ANSI_BLUE+"bleu :"+ANSI_RESET+ "joue "+coupB);
 
-                wait2sec();
+                if (slowmode) wait2sec();
                 turn++;
                 // IA Rouge
                 IARed.setB(board);
@@ -99,51 +105,28 @@ public class Party {
                 affichePlateau(plateauAffichable);
 
                 System.out.println(ANSI_RED+"rouge :"+ANSI_RESET+" joue "+coupR);
-                wait2sec();
+                if (slowmode) wait2sec();
             }
             afficheScore();
         }
-
-
-
-
-
-
-/* IA VS IA */
-/*
-        char[] plateauAffichable=initIAvsIA();
-        int turn=2;
-        while (turn<12) {
-            // IA Bleue
-            turn++;
-            IABlue.setB(board);
-            Node nLastPlayB=IABlue.searchLastBluePlayNode(tree.root,(byte)(turn-1));
-            int coupB=IABlue.computeEquitableFirstPlayer(nLastPlayB);
-            board.setPawn(coupB,(byte)(turn/2+1), (byte)turn);
-
-            updatePlateau((turn/2)+1,coupB,plateauAffichable);
-            affichePlateau(plateauAffichable);
-            System.out.println(ANSI_BLUE+"bleu :"+ANSI_RESET+ "joue "+coupB);
-
-            wait2sec();
-            turn++;
-            // IA Rouge
-            IARed.setB(board);
-            Node nLastPlayR=IARed.searchLastBluePlayNode(tree.root,(byte)(turn-1));
-            int coupR=IARed.computeBestRedPlay(nLastPlayR);
-            board.setPawn(coupR, (byte)(turn/2+6), (byte)turn);
-
-            updatePlateau(turn/2,coupR,plateauAffichable);
-            affichePlateau(plateauAffichable);
-
-            System.out.println(ANSI_RED+"rouge :"+ANSI_RESET+" joue "+coupR);
-            wait2sec();
-        }
-        board.computeScore();
-        System.out.println(ANSI_BLUE+"bleu : "+ANSI_RESET+board.blueScore+ANSI_RED+" rouge : "+board.redScore+ANSI_RESET);
-*/
     }
-    public int welcome() {
+
+    private void isPlayable(int coup) {
+        if (coup<0 || coup > 12) {
+            isPlayable=false;
+            return;
+        }
+        for (int i=0;i<positionChiffre.length;i++) {
+            if (board.board[coup]!=-1) {
+                isPlayable=false;
+                return;
+            }
+        }
+        isPlayable=true;
+    }
+
+    public int[] welcome() {
+        int typePartie;
         System.out.println("***************************************************");
         System.out.println("*                "+ANSI_RED+"LE JEU DU DIAMANT"+ANSI_RESET+"                *");
         System.out.println("*  ETES-VOUS PRET A AFFRONTER NOS MEILLEURES IA ? *");
@@ -155,8 +138,8 @@ public class Party {
         System.out.println("*         3 = IA normal vs IA hard                *");
         System.out.println("* Choisir :                                       *");
         int tP=input.nextInt();
-        if (tP>=0 && tP<4) typeParty=tP; else return welcome();
-        if (typeParty==2) System.out.println("*                 "+ANSI_RED+"Bonne chance...!"+ANSI_RESET+"                *");
+        if (tP>=0 && tP<4) typePartie=tP; else return welcome();
+        if (typePartie==2) System.out.println("*                 "+ANSI_RED+"Bonne chance...!"+ANSI_RESET+"                *");
         else System.out.println("*                   "+ANSI_BLUE+"Bon choix !"+ANSI_RESET+"                   *");
         System.out.println("*                                                 *");
         System.out.println("*                 Choisissez un mode :            *");
@@ -164,16 +147,19 @@ public class Party {
         System.out.println("*         1 = Pas d'attente                       *");
         System.out.println("* Choisir :                                       *");
         int sM=input.nextInt();
-        if (sM>=0) slowmode=true; else if (sM==1) slowmode=false; else return welcome();
+        if (!(sM>=0 && sM<=1)) return welcome();
         System.out.println("*                                                 *");
-        if (typeParty==2) System.out.println("*             "+ANSI_RED+"Preparez-vous au carnage."+ANSI_RESET+"           *");
+        if (typePartie==2) System.out.println("*             "+ANSI_RED+"Preparez-vous au carnage."+ANSI_RESET+"           *");
         System.out.println("************** LA PARTIE VA COMMENCER *************");
         System.out.println();
         System.out.println();
         System.out.println();
         System.out.println();
+        int[] res = new int[2];
+        res[0]=typePartie;
+        res[1]=sM;
         wait2sec();
-        return typeParty;
+        return res;
     }
 
     public char[] initIAvsIA() {
@@ -221,7 +207,7 @@ public class Party {
     }
     public char[] buildPlat() {
 
-        String sToPrint= "  ************\n  *   *   *   *\n****************\n*   *   *   *   *\n*****************\n  *   *   *   *\n  *************\n    *   *   *\n    *********\n      *   *\n      *****\n";
+        String sToPrint= "   ***********\n  *   *   *   *\n ***************\n*   *   *   *   *\n *************** \n  *   *   *   *\n   *********** \n    *   *   *\n     ******* \n      *   *\n       *** \n";
         char[] charPrint = new char[sToPrint.length()];
         for (int i=0;i<sToPrint.length();i++) charPrint[i]=sToPrint.charAt(i);
         return charPrint;

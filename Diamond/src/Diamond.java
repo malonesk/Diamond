@@ -30,7 +30,9 @@ public class Diamond {
          and comment all the previous ones.
          */
         Party party = new Party();
-        int typeParty=party.welcome();
-        party.start(typeParty);
+        int[] paramParty=party.welcome();
+        boolean slowmode;
+        if (paramParty[1]==0) slowmode=true; else slowmode=false;
+        party.start(paramParty[0],slowmode);
     }
 }
