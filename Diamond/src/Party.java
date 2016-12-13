@@ -36,7 +36,7 @@ public class Party {
     public void start(int typeParty, boolean slowmode) {
 /* PLAYER VERSUS IA */
         if (typeParty==1 || typeParty==2) {
-            char[] plateauAffichable = initPvsIA();
+            char[] plateauAffichable = initParty(typeParty);
             int turn = 2;
             int coupB=-1;
             while (turn < 12) {
@@ -74,7 +74,7 @@ public class Party {
         }
 /* IA vs IA */
         else if (typeParty==0 || typeParty==3) {
-            char[] plateauAffichable=initIAvsIA();
+            char[] plateauAffichable=initParty(typeParty);
             int turn=2;
             while (turn<12) {
                 // IA Bleue
@@ -162,61 +162,49 @@ public class Party {
         return res;
     }
 
-    public char[] initIAvsIA() {
+    public char[] initParty(int typePartie) {
         board.clearBoard();
         char[] plateauAffichable=buildPlat();
         affichePlateau(plateauAffichable);
+        int coupB1;
+        do {
+            System.out.println(ANSI_BLUE+"Bleu : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
+            coupB1 = input.nextInt();
+            isPlayable(coupB1);
+        } while (!isPlayable);
 
-        System.out.println(ANSI_BLUE+"Bleu : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
-        int coupB1 = input.nextInt();
         tree.setFirstBlueChoice(coupB1);
         updatePlateau(1,coupB1,plateauAffichable);
         affichePlateau(plateauAffichable);
 
-        System.out.println(ANSI_RED+"Rouge : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
-        int coupR1 = input.nextInt();
+        int coupR1;
+        do {
+            System.out.println(ANSI_RED + "Rouge : " + ANSI_RESET + "Entrer votre 1er coup (entre 0 et 12) : ");
+            coupR1 = input.nextInt();
+            isPlayable(coupR1);
+        } while (!isPlayable);
+
         tree.setFirstRedChoice(coupR1);
         updatePlateau(1,coupR1,plateauAffichable);
         affichePlateau(plateauAffichable);
 
         tree.buildTree();
         IARed=new ArtificialIntelligence(tree,board);
-        IABlue=new ArtificialIntelligence(tree,board);
+        if (typePartie==0 || typePartie==3) IABlue=new ArtificialIntelligence(tree,board);
         return plateauAffichable;
     }
-    public char[] initPvsIA() {
-        board.clearBoard();
-        char[] plateauAffichable=buildPlat();
-        affichePlateau(plateauAffichable);
-
-        System.out.println(ANSI_BLUE+"Bleu : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
-        int coupB1 = input.nextInt();
-        tree.setFirstBlueChoice(coupB1);
-        updatePlateau(1,coupB1,plateauAffichable);
-        affichePlateau(plateauAffichable);
-
-        System.out.println(ANSI_RED+"Rouge : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
-        int coupR1 = input.nextInt();
-        tree.setFirstRedChoice(coupR1);
-        updatePlateau(1,coupR1,plateauAffichable);
-        affichePlateau(plateauAffichable);
-
-        tree.buildTree();
-        IARed=new ArtificialIntelligence(tree,board);
-        return plateauAffichable;
-    }
-    public char[] buildPlat() {
+    private char[] buildPlat() {
 
         String sToPrint= "   ***********\n  *   *   *   *\n ***************\n*   *   *   *   *\n *************** \n  *   *   *   *\n   *********** \n    *   *   *\n     ******* \n      *   *\n       *** \n";
         char[] charPrint = new char[sToPrint.length()];
         for (int i=0;i<sToPrint.length();i++) charPrint[i]=sToPrint.charAt(i);
         return charPrint;
     }
-    public void affichePlateau(char[] tab) {
+    private void affichePlateau(char[] tab) {
         for (int i=0; i<tab.length;i++) System.out.print(whichColor(tab[i],i));
     }
 
-    public String whichColor(char val, int indexCharTableau) {
+    private String whichColor(char val, int indexCharTableau) {
         if (val==' ') return val+"";
         else if (val== '*') return val+"";
         else {
@@ -228,7 +216,7 @@ public class Party {
         }
         return ""+val;
     }
-    public void updatePlateau(int valeurPion, int coup, char[] plateau) {
+    private void updatePlateau(int valeurPion, int coup, char[] plateau) {
         char val=Integer.toString(valeurPion).charAt(0);
         switch(coup) {
             case 0 :
@@ -272,7 +260,7 @@ public class Party {
                 break;
         }
     }
-    public void afficheScore() {
+    private void afficheScore() {
         board.computeScore();
         System.out.println("***********************");
         System.out.println("*        "+ANSI_BLUE+board.blueScore+":"+ANSI_RED+board.redScore+ANSI_RESET+"        *");
@@ -283,7 +271,7 @@ public class Party {
         System.out.println("*                     *");
         System.out.println("***********************");
     }
-    public void wait2sec() {
+    private void wait2sec() {
         try {
             Thread.sleep(2500);
         } catch (InterruptedException e) {
