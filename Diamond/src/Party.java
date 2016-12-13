@@ -105,24 +105,33 @@ public class Party {
             IABlue.setB(board);
             Node nLastPlayB=IABlue.searchLastBluePlayNode(tree.root,(byte)(turn-1));
             int coupB=IABlue.computeEquitablePlay(nLastPlayB);
-            board.setPawn(coupB,(byte)((turn/2)+1), (byte)turn);
+            board.setPawn(coupB,(byte)(turn/2+1), (byte)turn);
 
-            updatePlateau(turn/2,coupB,plateauAffichable);
+            updatePlateau((turn/2)+1,coupB,plateauAffichable);
             affichePlateau(plateauAffichable);
-
             System.out.println(ANSI_BLUE+"bleu :"+ANSI_RESET+ "joue "+coupB);
 
+            try {
+                Thread.sleep(2500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             turn++;
             // IA Rouge
             IARed.setB(board);
             Node nLastPlayR=IARed.searchLastBluePlayNode(tree.root,(byte)(turn-1));
             int coupR=IARed.computeBestRedPlay(nLastPlayR);
-            board.setPawn(coupR, (byte)(turn/2), (byte)turn);
+            board.setPawn(coupR, (byte)(turn/2+6), (byte)turn);
 
             updatePlateau(turn/2,coupR,plateauAffichable);
             affichePlateau(plateauAffichable);
 
             System.out.println(ANSI_RED+"rouge :"+ANSI_RESET+" joue "+coupR);
+            try {
+                Thread.sleep(2500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         board.computeScore();
         System.out.println(ANSI_BLUE+"bleu : "+ANSI_RESET+board.blueScore+ANSI_RED+" rouge : "+board.redScore+ANSI_RESET);
@@ -232,12 +241,23 @@ public class Party {
 
     public void affichePlateau(char[] tab) {
         for (int i=0; i<tab.length;i++) {
-            if (positionChiffre[0]==i && board.board[0]!=-1) {
-                if (board.board[0]>6) System.out.print(ANSI_RED+tab[i]+ANSI_RESET);
-                else System.out.print(ANSI_BLUE+tab[i]+ANSI_RESET);
-            } else System.out.print(tab[i]);
+
+            System.out.print(whichColor(tab[i],i));
+            //System.out.print(tab[i]);
         }
 
+    }
+    public String whichColor(char val, int indexCharTableau) {
+        if (val==' ') return val+"";
+        else if (val== '*') return val+"";
+        else {
+            for (int i=0;i<13;i++) if (positionChiffre[i]==indexCharTableau) {
+                if (board.board[i]==-1) return " ";
+                else if (board.board[i] > 6) return ANSI_RED+val+ANSI_RESET;
+                else return ANSI_BLUE+val+ANSI_RESET;
+            }
+        }
+        return ""+val;
     }
 
 
@@ -286,11 +306,5 @@ public class Party {
                 plateau[positionChiffre[12]]=val;
                 break;
         }
-    }
-
-    public void printBoard() {
-        System.out.println("  *************");
-        System.out.print("  * ");
-
     }
 }
