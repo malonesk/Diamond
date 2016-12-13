@@ -2,5 +2,5 @@
 *.txt
 *.iml
 *.xml
-out/
-.idea/
+out/*
+.idea/*
