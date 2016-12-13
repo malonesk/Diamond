@@ -105,7 +105,7 @@ public class ArtificialIntelligence {
                     nMin = fils;
                 }
             }
-        } else return n.children[0].idCell;
+        } else nMin=n;
         if (nMin==null) return -2;
         return nMin.idCell;
     }

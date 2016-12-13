@@ -55,8 +55,11 @@ public class Party {
                 IARed.setB(board);
                 Node nLastPlay = IARed.searchLastPlayNode(tree.root, (byte) (turn - 1));
                 int coupR;
-                if (typeParty==1) coupR = IARed.computeEquitableSecondPlayer(nLastPlay);
-                else coupR=IARed.computeBestRedPlay(nLastPlay);
+                if (turn<12) {
+                    if (typeParty==1) coupR = IARed.computeEquitableSecondPlayer(nLastPlay);
+                    else coupR=IARed.computeBestRedPlay(nLastPlay);
+                } else coupR=IARed.computeBestLastRedPlay(nLastPlay);
+
                 board.setPawn(coupR, (byte) (turn / 2 + 6), (byte) turn);
                 updatePlateau(turn / 2, coupR, plateauAffichable);
                 affichePlateau(plateauAffichable);
