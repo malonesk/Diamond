@@ -35,7 +35,7 @@ public class Party {
     public void start() {
 
         board.clearBoard();
-/* PLAYER VERSUS PLAYER *//*
+/* PLAYER VERSUS IA *//*
 
         System.out.println("Bleu : Entrer votre 1er coup (entre 0 et 12) : ");
 
@@ -63,7 +63,7 @@ public class Party {
             IARed.setB(board);
             //IA.setT(tree);
             Node nLastPlay=IARed.searchLastBluePlayNode(tree.root,(byte)(turn-1));
-            int coupR=IARed.computeBestPlay(nLastPlay);
+            int coupR=IARed.computeEquitableSecondPlayer(nLastPlay);
             board.setPawn(coupR, (byte)(turn/2), (byte)turn);
 
             System.out.println("rouge : tour "+(turn/2)+ "\njoue "+coupR);
@@ -104,7 +104,7 @@ public class Party {
             turn++;
             IABlue.setB(board);
             Node nLastPlayB=IABlue.searchLastBluePlayNode(tree.root,(byte)(turn-1));
-            int coupB=IABlue.computeEquitablePlay(nLastPlayB);
+            int coupB=IABlue.computeEquitableFirstPlayer(nLastPlayB);
             board.setPawn(coupB,(byte)(turn/2+1), (byte)turn);
 
             updatePlateau((turn/2)+1,coupB,plateauAffichable);
@@ -137,6 +137,7 @@ public class Party {
         System.out.println(ANSI_BLUE+"bleu : "+ANSI_RESET+board.blueScore+ANSI_RED+" rouge : "+board.redScore+ANSI_RESET);
 
     }
+
     public char[] buildPlateau() {
         char[] charPrint = new char[178];
         int lastLen=0;

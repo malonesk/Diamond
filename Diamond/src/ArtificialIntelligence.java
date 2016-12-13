@@ -56,7 +56,7 @@ public class ArtificialIntelligence {
         return nMax.idCell;
     }
 
-    public int computeEquitablePlay(Node n) {
+    public int computeEquitableFirstPlayer(Node n) {
         /*Nous voulons ici jouer le noeud en dessous duquel les victoires rouges et bleues sont les plus proches.*/
         /*On doit donc, pour chaque fils de n
         *   calculer le nb de victoire rouge
@@ -80,6 +80,21 @@ public class ArtificialIntelligence {
         }
         if (nDiffMin==null) return -1;
         return nDiffMin.idCell;
+    }
+
+    public int computeEquitableSecondPlayer(Node n) {
+        int min=t.computeRedVictories(n)*2; //initialisation a une grande valeur
+        int buff;
+        Node nMin=null;
+        for (Node fils : n.children) {
+            buff=t.computeRedVictories(fils);
+            if (min>buff) {
+                min=buff;
+                nMin=fils;
+            }
+        }
+        if (nMin==null) return -1;
+        return nMin.idCell;
     }
 
 
