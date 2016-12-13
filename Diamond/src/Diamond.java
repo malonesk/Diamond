@@ -30,6 +30,7 @@ public class Diamond {
          and comment all the previous ones.
          */
         Party party = new Party();
-        party.start();
+        int typeParty=party.welcome();
+        party.start(typeParty);
     }
 }

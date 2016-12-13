@@ -8,11 +8,11 @@ public class ArtificialIntelligence {
         this.t=t;
         this.b=b;
     }
-    public Node searchLastBluePlayNode(Node n, byte turn) {
+    public Node searchLastPlayNode(Node n, byte turn) {
         if(n.idCell==b.coupsJoues[turn-1] && n.turn==turn) {return n;}
         for (Node fils : n.children) {
             if(fils.idCell==b.coupsJoues[fils.turn-1]) {
-                return searchLastBluePlayNode(fils,turn);
+                return searchLastPlayNode(fils,turn);
             }
         }
         return null;
@@ -31,15 +31,28 @@ public class ArtificialIntelligence {
          */
         int max=0;
         Node nMax=null;
-        for (Node fils : n.children) {
-            int nbWin=t.computeRedVictories(fils);
-            if (max<nbWin) {
-                max=nbWin;
-                nMax=fils;
+        if (n.nbChildren!=0) {
+            for (Node fils : n.children) {
+                int nbWin=t.computeRedVictories(fils);
+                if (max<nbWin) {
+                    max=nbWin;
+                    nMax=fils;
+                }
             }
-        }
+        } else nMax=n;
         if (nMax==null) return -1;
         return nMax.idCell;
+    }
+    public int computeBestLastRedPlay(Node n) {
+        int r1 = n.children[0].result;
+        int r2 = n.children[1].result;
+        if (r1==r2) {
+            return n.children[0].idCell;
+        } else {
+            if (r1==Node.RED_WINS) return n.children[0].idCell; else if (r2==Node.RED_WINS) return n.children[1].idCell;
+            else if (r1==Node.DRAW_PARTY) return n.children[0].idCell; else if (r2==Node.DRAW_PARTY) return n.children[1].idCell;
+            else return n.children[1].idCell;
+        }
     }
 
     public int computeBestBluePlay(Node n) {
@@ -61,13 +74,11 @@ public class ArtificialIntelligence {
         /*On doit donc, pour chaque fils de n
         *   calculer le nb de victoire rouge
         *   Calculer le nb de victoires bleues
-        *evaluer leur difference
-        *choisir le noeud ou la difference est minimum
+        *   evaluer leur difference
+        *   choisir le noeud ou la difference est minimum
         */
         int diff=t.computeBlueVictories(n)*2; //initialisation a une grande valeur
         int buff;
-        //char advantage; on pourrait stocker si l'avantage est pour rouge ou bleu (en fct de si redV>redB)
-        // et obtenir davantage de précision
         Node nDiffMin=null;
         for (Node fils : n.children) {
             int redV=t.computeRedVictories(fils);
@@ -86,14 +97,16 @@ public class ArtificialIntelligence {
         int min=t.computeRedVictories(n)*2; //initialisation a une grande valeur
         int buff;
         Node nMin=null;
-        for (Node fils : n.children) {
-            buff=t.computeRedVictories(fils);
-            if (min>buff) {
-                min=buff;
-                nMin=fils;
+        if (n.nbChildren!=0) {
+            for (Node fils : n.children) {
+                buff = t.computeRedVictories(fils);
+                if (min > buff) {
+                    min = buff;
+                    nMin = fils;
+                }
             }
-        }
-        if (nMin==null) return -1;
+        } else return n.children[0].idCell;
+        if (nMin==null) return -2;
         return nMin.idCell;
     }
 
