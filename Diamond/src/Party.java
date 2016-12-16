@@ -188,7 +188,7 @@ public class Party {
             affichePlateau(plateauAffichable);
         } else {
             int computedPawn;
-            if (typePartie==P_VS_HARD) computedPawn=IARed.computeFirstRedPlay(board);
+            if (typePartie==HARD_VS_HARD) computedPawn=IARed.computeFirstRedPlay(board);
             else computedPawn=IARed.computeFirtRandomRedPlay(board);
             board.setPawn(computedPawn, (byte)1, (byte)2);
             tree.setFirstBlueChoice(computedPawn);
