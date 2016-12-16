@@ -1,4 +1,3 @@
-import java.io.*;
 import java.util.*;
 /**
  * Created by sdomas on 04/10/16.
@@ -17,6 +16,11 @@ public class Party {
     private final String ANSI_RED = "\u001B[31m";
     private final String ANSI_BLUE = "\u001B[34m";
     private final String ANSI_RESET = "\u001B[0m";
+    public final int HARD_VS_HARD = 0;
+    public final int P_VS_EASY = 1;
+    public final int P_VS_HARD = 2;
+    public final int EASY_VS_HARD = 3;
+
     private Board board;
     private Tree tree;
     private Scanner input;
@@ -29,13 +33,18 @@ public class Party {
         board = new Board();
         tree = new Tree(board);
         input=new Scanner(System.in);
+        /*
+        La position des chiffres dans le tableau de caractère d'affichage du plateau
+         */
         positionChiffre = new int[]{19, 23, 27, 50, 54, 58, 62, 88, 92, 96, 122, 126, 152};
         isPlayable=false;
+        IARed = new ArtificialIntelligence(tree,board);
+        IABlue = new ArtificialIntelligence(tree,board);
     }
 
     public void start(int typeParty, boolean slowmode) {
 /* PLAYER VERSUS IA */
-        if (typeParty==1 || typeParty==2) {
+        if (typeParty==P_VS_EASY || typeParty==P_VS_HARD) {
             char[] plateauAffichable = initParty(typeParty);
             int turn = 2;
             int coupB=-1;
@@ -58,43 +67,43 @@ public class Party {
                 turn++;
                 // IA
                 IARed.setB(board);
-                Node nLastPlay = IARed.searchLastPlayNode(tree.root, (byte) (turn - 1));
+                Node nLastPlay = IARed.searchLastPlayedNode(tree.root, (byte) (turn - 1));
                 int coupR;
                 if (turn<12) {
-                    if (typeParty==1) coupR = IARed.computeEquitableSecondPlayer(nLastPlay);
+                    if (typeParty==P_VS_EASY) coupR = IARed.computeBadRedPlayer(nLastPlay);
                     else coupR=IARed.computeBestRedPlay(nLastPlay);
                 } else coupR=IARed.computeBestLastRedPlay(nLastPlay);
 
                 board.setPawn(coupR, (byte) (turn / 2 + 6), (byte) turn);
                 updatePlateau(turn / 2, coupR, plateauAffichable);
                 affichePlateau(plateauAffichable);
-                System.out.println(ANSI_RED + "rouge " + ANSI_RESET + "joue " + coupR);
+                System.out.println(ANSI_RED + "Rouge : " + ANSI_RESET + "joue " + coupR);
             }
             afficheScore();
         }
 /* IA vs IA */
-        else if (typeParty==0 || typeParty==3) {
+        else if (typeParty==HARD_VS_HARD || typeParty==EASY_VS_HARD) {
             char[] plateauAffichable=initParty(typeParty);
             int turn=2;
             while (turn<12) {
                 // IA Bleue
                 turn++;
                 IABlue.setB(board);
-                Node nLastPlayB=IABlue.searchLastPlayNode(tree.root,(byte)(turn-1));
+                Node nLastPlayB=IABlue.searchLastPlayedNode(tree.root,(byte)(turn-1));
                 int coupB;
-                if (typeParty==0) coupB=IABlue.computeBestBluePlay(nLastPlayB);
-                else coupB=IABlue.computeEquitableFirstPlayer(nLastPlayB);
+                if (typeParty==HARD_VS_HARD) coupB=IABlue.computeBestBluePlay(nLastPlayB);
+                else coupB=IABlue.computeBadBluePlayer(nLastPlayB);
                 board.setPawn(coupB,(byte)(turn/2+1), (byte)turn);
 
                 updatePlateau((turn/2)+1,coupB,plateauAffichable);
                 affichePlateau(plateauAffichable);
-                System.out.println(ANSI_BLUE+"bleu :"+ANSI_RESET+ "joue "+coupB);
+                System.out.println(ANSI_BLUE+"Bleu : "+ANSI_RESET+ "joue "+coupB);
 
                 if (slowmode) wait2sec();
                 turn++;
                 // IA Rouge
                 IARed.setB(board);
-                Node nLastPlayR=IARed.searchLastPlayNode(tree.root,(byte)(turn-1));
+                Node nLastPlayR=IARed.searchLastPlayedNode(tree.root,(byte)(turn-1));
                 int coupR;
                 if (turn<12) {
                      coupR=IARed.computeBestRedPlay(nLastPlayR);
@@ -104,7 +113,7 @@ public class Party {
                 updatePlateau(turn/2,coupR,plateauAffichable);
                 affichePlateau(plateauAffichable);
 
-                System.out.println(ANSI_RED+"rouge :"+ANSI_RESET+" joue "+coupR);
+                System.out.println(ANSI_RED+"Rouge :"+ANSI_RESET+" joue "+coupR);
                 if (slowmode) wait2sec();
             }
             afficheScore();
@@ -167,30 +176,34 @@ public class Party {
         char[] plateauAffichable=buildPlat();
         affichePlateau(plateauAffichable);
         int coupB1;
-        do {
-            System.out.println(ANSI_BLUE+"Bleu : "+ANSI_RESET+"Entrer votre 1er coup (entre 0 et 12) : ");
-            coupB1 = input.nextInt();
-            isPlayable(coupB1);
-        } while (!isPlayable);
+        if (typePartie==P_VS_EASY||typePartie==P_VS_HARD) {
+            do {
+                System.out.println(ANSI_BLUE + "Bleu : " + ANSI_RESET + "Entrer votre 1er coup (entre 0 et 12) : ");
+                coupB1 = input.nextInt();
+                isPlayable(coupB1);
+            } while (!isPlayable);
 
-        tree.setFirstBlueChoice(coupB1);
-        updatePlateau(1,coupB1,plateauAffichable);
-        affichePlateau(plateauAffichable);
+            tree.setFirstBlueChoice(coupB1);
+            updatePlateau(1, coupB1, plateauAffichable);
+            affichePlateau(plateauAffichable);
+        } else {
+            int computedPawn;
+            if (typePartie==P_VS_HARD) computedPawn=IARed.computeFirstRedPlay(board);
+            else computedPawn=IARed.computeFirtRandomRedPlay(board);
+            board.setPawn(computedPawn, (byte)1, (byte)2);
+            tree.setFirstBlueChoice(computedPawn);
+            updatePlateau(1, computedPawn, plateauAffichable);
+            affichePlateau(plateauAffichable);
+        }
 
-        int coupR1;
-        do {
-            System.out.println(ANSI_RED + "Rouge : " + ANSI_RESET + "Entrer votre 1er coup (entre 0 et 12) : ");
-            coupR1 = input.nextInt();
-            isPlayable(coupR1);
-        } while (!isPlayable);
-
-        tree.setFirstRedChoice(coupR1);
-        updatePlateau(1,coupR1,plateauAffichable);
+        int computedRedPawn=IARed.computeFirstRedPlay(board);
+        tree.setFirstRedChoice(computedRedPawn);
+        updatePlateau(1,computedRedPawn,plateauAffichable);
         affichePlateau(plateauAffichable);
 
         tree.buildTree();
         IARed=new ArtificialIntelligence(tree,board);
-        if (typePartie==0 || typePartie==3) IABlue=new ArtificialIntelligence(tree,board);
+        if (typePartie==HARD_VS_HARD || typePartie==EASY_VS_HARD) IABlue=new ArtificialIntelligence(tree,board);
         return plateauAffichable;
     }
     private char[] buildPlat() {

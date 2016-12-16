@@ -2,7 +2,13 @@
  * Created by sdomas on 03/10/16.
  */
 public class Board {
-
+    /*
+    coupsJoues : tableau d'int content l'historique des coups joués
+    intervient dans le calcul du "chemin" menant au denrier coups joués d'un joueur dans l'arbre
+    utilisé par les IA
+    coupsJoues est update dans la methode setPawn(int idCell, byte valeur, byte turn)
+    d'où la modification de la signature de cette méthode
+     */
     public int[] coupsJoues;
 
     public static byte VOID_CELL = -1;
@@ -150,12 +156,20 @@ public class Board {
 
     /* setPawn() :
        put a pawn of the given value at idCell in the board.
+       // RAJOUTE
+       update the played idCell in an array
+
+       a byte turn have been added to the parameters to update this array, my bad
      */
-    public void setPawn(int idCell, byte value, byte turn) { //exprimer turn en fonctiond de value; sachant que value = (turn/2) si rouge -> turn = value*2 ; bleu -> turn=(value-1)*2
+    public void setPawn(int idCell, byte value, byte turn) {
         board[idCell] = value;
         coupsJoues[turn-1]=idCell;
     }
-
+    /*
+    We split the setPawn() method into one method to actually put a pawn in the board
+    and another method to put a falsePawn is the board without updating the coupsJoues array
+    This method is only use to build the tree of possibilites in computePossibilities()
+     */
     public void setFalsePawn(int idCell, byte value) {
         board[idCell] = value;
     }
