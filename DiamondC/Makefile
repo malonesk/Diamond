@@ -2,7 +2,7 @@ OBJ := diamond.o game.o
 EXENAME := diamond
 
 CC := gcc
-CFLAGS := -Wall -O3
+CFLAGS := -Wall -O3 -std=c99
 
 all : exe
 
